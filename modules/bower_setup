@@ -1,0 +1,5 @@
+# MODULE
+
+alias b:i="bower install --save"
+alias b:u="bower update"
+alias b:r="bower register"

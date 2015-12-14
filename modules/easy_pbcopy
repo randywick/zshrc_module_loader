@@ -1,0 +1,4 @@
+# MODULE
+
+# copies the contents of $1 to the clipboard
+cb() { cat "$1" | pbcopy }

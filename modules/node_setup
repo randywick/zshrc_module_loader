@@ -1,0 +1,11 @@
+# MODULE
+
+. ~/.nvm/nvm.sh
+export NODE_PATH=$NODE_PATH:`npm root -g`
+alias n:i="npm install --save"
+alias n:id="npm install --save-dev"
+alias n:ig="npm install -g"
+alias n:r="npm run"
+alias n:p="npm publish"
+alias n:pp="npm version patch && npm publish"
+alias n:relink="npm unlink && npm link"

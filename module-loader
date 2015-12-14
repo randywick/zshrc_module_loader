@@ -1,0 +1,38 @@
+#!/bin/sh
+
+load_modules() {
+  # if argument supplied is not a directory, assume PWD
+  if [[ -d "$1" ]]; then
+    dir="$1"
+  else
+    dir="$PWD"
+  fi
+
+  # iterate over all files
+  for file in $dir/*; do
+
+    # Uncomment to recursively walk directories
+    # if [[ -d "$file" ]]; then
+    #   load_modules "$file"
+    # fi
+
+    if [[ -f "$file" ]]; then
+
+      top_line=$(head -n 1 "$file")
+
+      if [[ "$top_line" == "# MODULE" ]]; then
+
+        echo "Loading $file"
+        . $file
+
+      else
+
+        echo "Skipping $file"
+
+      fi
+
+    fi
+
+  done
+
+}

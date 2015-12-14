@@ -1,0 +1,7 @@
+# MODULE
+
+alias z="source ~/.zshrc"
+alias zsrc="source ~/.zshrc"
+alias zedit="vim ~/.zshrc"
+alias now='date +"%T"'
+alias ll="ls -al"

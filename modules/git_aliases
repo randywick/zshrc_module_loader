@@ -1,0 +1,6 @@
+# MODULE
+
+alias g:c="git commit -am"
+alias g:aa="git add --all"
+alias g:ac="git add --all && git commit -am"
+alias g:p="git push"

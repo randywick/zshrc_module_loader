@@ -1,0 +1,4 @@
+# MODULE
+
+unsetopt share_history
+setopt no_share_history

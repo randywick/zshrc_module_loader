@@ -1,0 +1,12 @@
+# MODULE
+
+alias t="t.new"
+alias t:new="tmux new -s"
+alias t:attach="tmux a -t"
+alias t:a="t:attach"
+alias t:detach="tmux detach"
+alias t:d="t:detach"
+alias t:kill="tmux kill-session -t"
+alias t:k="t:kill"
+alias t:ls="tmux ls"
+alias t:help="echo \"t:new|t\\nt:attach|t:a\\nt:detach|t:d\\nt:kill|t:k\\nt.:s\\nt:help\""
