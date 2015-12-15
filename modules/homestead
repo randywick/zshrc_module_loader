@@ -1,0 +1,12 @@
+# MODULE
+
+h5() {
+    if [[ -d ~/Homestead ]]; then
+	cd ~/Homestead
+	if [[ -n "$1" ]]; then
+		vagrant "$1"
+        fi
+    else
+      echo "Homestead is not installed or not located at ~/Homestead"
+    fi
+}
