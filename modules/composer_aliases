@@ -1,0 +1,9 @@
+# MODULE
+# VERSION 0.0.1
+# DESC Aliases for composer
+# DEPENDS Composer, vagrant
+
+alias dc="composer dumpautoload -o"
+alias cu="composer update"
+alias cr="composer require"
+alias cdr="composer require --dev"
