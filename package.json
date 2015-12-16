@@ -1,0 +1,25 @@
+{
+  "name": "module_loader",
+  "version": "1.0.0",
+  "description": "A very simple component to modularize .zshrc source files",
+  "main": "module_loader.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/randywick/zshrc_module_loader.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/randywick/zshrc_module_loader/issues"
+  },
+  "homepage": "https://github.com/randywick/zshrc_module_loader#readme",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "commander": "^2.9.0",
+    "debug": "^2.2.0",
+    "fs-extra": "^0.26.2"
+  }
+}

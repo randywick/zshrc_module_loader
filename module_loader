@@ -1,5 +1,3 @@
-#!/bin/sh
-
 load_modules() {
   # if argument supplied is not a directory, assume PWD
   if [[ -d "$1" ]]; then

@@ -1,0 +1,530 @@
+#!/usr/bin/env node
+
+'use strict';
+
+
+const colors = require('colors');
+const commander = require('commander');
+const debug = require('debug')('module_loader')
+const fs = require('fs-extra');
+const https = require('https');
+const os = require('os');
+const path = require('path');
+const readline = require('readline');
+const url = require('url');
+
+
+// TODO: MODULE_DIR should attempt to use an environment variable first
+const MODULE_DIR=path.join(os.homedir(), '.module_loader');
+const GITHUB_API_TOKEN=process.env.ML_GITHUB_API_TOKEN
+
+
+const loaded = [];
+const available = new Map();
+
+
+/**
+ * general init functionality
+ *
+ * @return {[type]} [description]
+ */
+function init() {
+  debug('initializing...')
+
+  debug('ensuring available directory and file structure:')
+  debug(`MODULE_DIR: ${MODULE_DIR}`)
+
+  fs.ensureDirSync(MODULE_DIR);
+
+  debug('loading module and ignore list');
+
+  return discoverLoadedModules()
+}
+
+
+/**
+ * Reads a candidate file and derives module information.
+ * TODO: add more meta information into module file
+ *
+ * @param  {[type]} pathname [description]
+ * @return {[type]}          [description]
+ */
+function getModuleInfo(pathname) {
+  debug(`reading file at ${pathname}`);
+
+  return new Promise(resolve => {
+    const rl = readline.createInterface({
+      input: fs.createReadStream(pathname)
+    });
+
+    let completed = false;
+
+    rl.on('line', line => {
+      if (completed) return;
+
+      debug(`read line from ${pathname}`)
+
+      if (line.startsWith('# MODULE')) {
+        debug(`${pathname} appears to be a module`)
+        loaded.push(path.basename(pathname));
+      }
+
+      rl.close();
+      resolve()
+      completed = true;
+    })
+
+    rl.on('close', () => {
+      debug(`completed reading ${pathname}`)
+      // resolve()
+    })
+  })
+}
+
+
+/**
+ * Convenience method to test whether a pathname is a file or directory and
+ * push files on as candidate modules.
+ *
+ * @param  {[type]} pathname [description]
+ * @return {[type]}          [description]
+ */
+function testPathname(pathname) {
+  return new Promise((resolve, reject) => {
+    fs.stat(pathname, (err, stat) => {
+      if (err) return reject(err);
+
+      if (stat.isDirectory()) {
+        // recursive behavior would go here
+        return resolve();
+      }
+
+      resolve(getModuleInfo(pathname));
+    })
+  })
+}
+
+
+/**
+ * mapper function for discoverLoadedModules
+ *
+ * @param  {[type]} filename [description]
+ * @return {[type]}          [description]
+ */
+function filesMapper(filename) {
+  return testPathname(path.join(MODULE_DIR, filename))
+}
+
+
+/**
+ * Iterate over module directory and find modules that are loaded.
+ *
+ * @return {[type]} [description]
+ */
+function discoverLoadedModules() {
+  return new Promise((resolve, reject) => {
+    fs.readdir(MODULE_DIR, (err, files) => {
+      if (err) {
+        return reject(err);
+      }
+
+      Promise.all(files.map(filesMapper))
+        .then(() => resolve())
+    })
+  })
+}
+
+
+/**
+ * Convenience method to build a pathname for a module
+ *
+ * @param  {[type]} module_name [description]
+ * @return {[type]}             [description]
+ */
+function localPathname(module_name) {
+  return path.join(MODULE_DIR, module_name);
+}
+
+
+/**
+ * Convenience method testing whether a file (or directory) exists by pulling
+ * a Stat object
+ *
+ * @param  {[type]} pathname [description]
+ * @return {[type]}          [description]
+ */
+function fileExists(pathname) {
+  return new Promise(resolve => fs.stat(pathname, err => resolve(!err)))
+}
+
+
+/**
+ * If a module by the name of `module_name` exists, it should be deleted.
+ *
+ * @param  {[type]} module_name [description]
+ * @return {[type]}             [description]
+ */
+function deleteModuleIfExists(module_name) {
+
+  const pathname = localPathname(module_name);
+  debug(`attempting to delete: ${module_name} from ${pathname}`)
+
+  return fileExists(pathname)
+    .then(exists => {
+      if (!exists) {
+        debug(`module ${module_name} not installed`)
+        return false;
+      }
+
+      return new Promise((resolve, reject) => {
+        fs.remove(pathname, err => {
+          if (err) {
+            debug(`error deleting ${module_name}: ${err.name} - ${err.message}`)
+            return reject(err);
+          }
+
+          debug(`deleted module: ${module_name}`)
+          resolve(true);
+        })
+      })
+    })
+}
+
+
+/**
+ * Fetch the module `module_name` from the repository and store it in the
+ * module directory.
+ *
+ * @param  {[type]} module_name [description]
+ * @return {[type]}             [description]
+ */
+function downloadModule(module_name) {
+  return new Promise((resolve, reject) => {
+    debug(`downloading module: ${module_name}`);
+
+    const detail = available.get(module_name);
+    const endpoint = detail.download_url;
+
+    debug('creating request...');
+    const options = buildHttpsRequestOptions(endpoint);
+
+    debug('creating writestream');
+    const ws = fs.createWriteStream(localPathname(module_name))
+
+    const req = https.request(options, res => {
+      debug(`received ${res.statusCode} response`);
+      debug(`headers: ${res.headers}`);
+
+      res.pipe(ws);
+
+      res.on('end', () => {
+        debug('response ended');
+        console.log(`installed module (${module_name})`)
+        resolve();
+      })
+    })
+
+    req.end();
+
+    req.on('error', e => {
+      debug(`request error: ${e.name} - ${e.message}`)
+      reject(e);
+    })
+  })
+}
+
+
+/**
+ * https response body parser.  This takes a JSON response from Github and
+ * populates the array of available modules.
+ *
+ * @param  {[type]} body [description]
+ * @return {[type]}      [description]
+ */
+function updateAvailableModules(body) {
+  const data = JSON.parse(body);
+
+  if (!Array.isArray(data)) return;
+
+  data
+    .filter(item => item.type === 'file' && !item.name.startsWith('.'))
+    .forEach(item => available.set(item.name, item))
+}
+
+
+/**
+ * Given the Github endpoint `endpoint`, resolves URL information and builds
+ * the https.request options object.
+ *
+ * @param  {[type]} endpoint [description]
+ * @return {[type]}          [description]
+ */
+function buildHttpsRequestOptions(endpoint) {
+  debug('parsing endpoint');
+  endpoint = url.parse(endpoint);
+
+  const options = {
+    hostname: endpoint.hostname,
+    port: endpoint.port,
+    path: endpoint.path,
+    method: 'GET',
+    headers: {
+      'User-Agent': 'randywick/module_loader'
+    }
+  }
+
+  if (!!GITHUB_API_TOKEN) {
+    debug('Using Github API token');
+    options.headers['Authorization'] = `token ${GITHUB_API_TOKEN}`;
+  } else {
+    debug('No Github API token found');
+    console.log('No Github API token detected.');
+    console.log('Export to ML_GITHUB_API_TOKEN to avoid rate limiting');
+  }
+
+  return options;
+}
+
+
+/**
+ * Fetches information about all modules from the repository
+ *
+ * @return {[type]} [description]
+ */
+function fetchAvailableModules() {
+  return new Promise((resolve, reject) => {
+    debug('Fetching available modules');
+
+    debug('creating request...');
+    const endpoint = url.resolve(
+      'https://api.github.com',
+      '/repos/randywick/zshrc_module_loader/contents/modules'
+    )
+
+    const options = buildHttpsRequestOptions(endpoint);
+
+    const req = https.request(options, res => {
+      debug(`received ${res.statusCode} response`);
+      debug(`headers: ${res.headers}`);
+
+      let body = '';
+
+      res.on('data', data => {
+        debug(`chunk retrieved`);
+        body += data;
+      })
+
+      res.on('end', () => {
+        debug('response ended');
+        updateAvailableModules(body);
+        resolve();
+      })
+    })
+
+    req.end();
+
+    req.on('error', e => {
+      debug(`request error: ${e.name} - ${e.message}`)
+      reject(e);
+    })
+  })
+}
+
+
+/**
+ * Tests `module_name` against the `available` map and throws if not included.
+ *
+ * @param  {[type]} module_name [description]
+ * @return {[type]}             [description]
+ */
+function checkModuleName(module_name) {
+  if (available.has(module_name)) return;
+
+  const e = new Error(module_name);
+  e.name = 'NoModuleError';
+  throw e;
+}
+
+
+/**
+ * Renders a list of available modules
+ *
+ * @return {[type]} [description]
+ */
+function displayAvailableModules() {
+  console.log(`Available Modules: ${available.size}`)
+  for (let key of available.keys()) {
+    console.log(`  - ${key}`)
+  }
+}
+
+
+/**
+ * Expandable command error handler.  Relay as much or little as desired.
+ *
+ * @param  {[type]} e [description]
+ * @return {[type]}   [description]
+ */
+function handleCommandError(e) {
+  if (e.name === 'NoModuleError') {
+    console.log(`[Error] ${e.message}: no module found`)
+    return;
+  }
+
+  console.log('An unknown error has occurred');
+  debug(e);
+}
+
+
+/**
+ * Action functions
+ *
+ * These functions directly correspond with a Commander action and perform
+ * the requirements of each command.
+ */
+
+
+/**
+ * [listModules description]
+ * @return {[type]} [description]
+ */
+function listModules() {
+  debug('list available modules command accepted');
+
+  return fetchAvailableModules()
+    .then(displayAvailableModules)
+    .catch(e => handleCommandError(e))
+}
+
+
+/**
+ * [installModules description]
+ * @param  {[type]} module_name  [description]
+ * @param  {[type]} module_names [description]
+ * @return {[type]}              [description]
+ */
+function installModules(module_name, module_names) {
+  if (!module_names) module_names = [];
+  module_names.unshift(module_name);
+  debug(`command: install modules (${module_names})`);
+
+  return fetchAvailableModules()
+
+    .then(() => {
+      return Promise.all(
+        module_names.map(name => {
+          checkModuleName(name)
+          return downloadModule(name)
+        })
+      )
+    })
+
+    .catch(e => handleCommandError(e))
+}
+
+
+/**
+ * [removeModule description]
+ * @param  {[type]} module_name [description]
+ * @return {[type]}             [description]
+ */
+function removeModule(module_name) {
+  debug(`command: remove module (${module_name})`);
+
+  return deleteModuleIfExists(module_name)
+
+    .then(result => {
+      if (result) {
+        debug(`${module_name} existed and was deleted`);
+        console.log(`removed module (${module_name})`)
+        return;
+      }
+
+      debug(`${module_name} was not loaded`);
+      console.log(`module not found (${module_name})`)
+    })
+
+    .catch(e => handleCommandError(e))
+}
+
+
+/**
+ * [updateModule description]
+ * @param  {[type]} module_name [description]
+ * @return {[type]}             [description]
+ */
+function updateModule(module_name) {
+  debug(`command: update modules (${module_name || 'all'})`);
+
+  return fetchAvailableModules()
+
+    .then(() => {
+      (!!module_name ? [module_name] : loaded)
+        .map(name =>
+          removeModule(name)
+            .then(() => installModules(name))
+            .then(() => console.log(`Updated ${name}`))
+        )
+    })
+}
+
+
+/** Commander - CLI definitions */
+
+
+commander
+  .version('1.0.0')
+
+
+commander
+  .command('ls')
+  .alias('list')
+  .option('-l, --local', 'only show locally installed modules')
+  .description('list available modules')
+  .action(() => init().then(listModules))
+
+
+commander
+  .command('install <module_name> [module_names...]')
+  .alias('i')
+  .description('install one or more modules')
+  .action((name, names) => init().then(() => installModules(name, names)))
+
+  .on('--help', function() {
+    console.log('  Examples:');
+    console.log();
+    console.log('    $ module_loader install easy_pbcopy');
+    console.log('    $ module_loader i tab_colors');
+    console.log();
+  })
+
+
+commander
+  .command('update [module_name]')
+  .alias('u')
+  .description('updates one or all modules')
+  .action(module_name => init().then(() => updateModule(module_name)))
+  .on('--help', function() {
+    console.log('  Examples:');
+    console.log();
+    console.log('    $ module_loader update easy_pbcopy');
+    console.log('    $ module_loader u tab_colors');
+    console.log();
+  })
+
+
+commander
+  .command('remove <module_name>')
+  .alias('rm')
+  .description('removes an installed module')
+  .action(module_name => init().then(() => removeModule(module_name)))
+  .on('--help', function() {
+    console.log('  Examples:');
+    console.log();
+    console.log('    $ module_loader remove easy_pbcopy');
+    console.log('    $ module_loader rm tab_colors');
+    console.log();
+  })
+
+
+commander.parse(process.argv);
