@@ -1,4 +1,7 @@
 # MODULE
+# VERSION 0.0.1
+# DESC Sources nvm, sets correct NODE_PATH for Node version in use, and creates a few aliases for more rapid npm use
+# DEPENDS nvm
 
 . ~/.nvm/nvm.sh
 export NODE_PATH=$NODE_PATH:`npm root -g`

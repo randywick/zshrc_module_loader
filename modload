@@ -199,6 +199,32 @@ function deleteModuleIfExists(module_name) {
  * @return {[type]}             [description]
  */
 function downloadModule(module_name) {
+
+  return fetchModule(module_name)
+
+    .then(body => {
+      return new Promise((resolve, reject) => {
+        fs.writeFile(localPathname(module_name), body, err => {
+          if (err) {
+            return reject(err);
+          }
+
+          resolve();
+        })
+      })
+
+    })
+}
+
+
+/**
+ * Fetches a module from the repository and resolves its promise with the
+ * module body
+ *
+ * @param  {[type]} module_name [description]
+ * @return {[type]}             [description]
+ */
+function fetchModule(module_name) {
   return new Promise((resolve, reject) => {
     debug(`downloading module: ${module_name}`);
 
@@ -208,19 +234,21 @@ function downloadModule(module_name) {
     debug('creating request...');
     const options = buildHttpsRequestOptions(endpoint);
 
-    debug('creating writestream');
-    const ws = fs.createWriteStream(localPathname(module_name))
-
     const req = https.request(options, res => {
       debug(`received ${res.statusCode} response`);
       debug(`headers: ${res.headers}`);
 
-      res.pipe(ws);
+      let body = '';
+
+      res.on('data', chunk => {
+        debug('chunk');
+        body += chunk
+      })
 
       res.on('end', () => {
         debug('response ended');
         console.log(`installed module (${module_name})`)
-        resolve();
+        resolve(body);
       })
     })
 
@@ -354,7 +382,15 @@ function checkModuleName(module_name) {
 function displayAvailableModules() {
   console.log(`Available Modules: ${available.size}`)
   for (let key of available.keys()) {
-    console.log(`  - ${key}`)
+    const item = available.get(key);
+
+    let label = key;
+
+    if (loaded.indexOf(key) !== -1) {
+      label = colors.white.bold(label);
+    }
+
+    console.log(`- ${label}`)
   }
 }
 
@@ -469,6 +505,20 @@ function updateModule(module_name) {
 }
 
 
+/**
+ * [invalidCommand description]
+ * @param  {[type]} cmd [description]
+ * @return {[type]}     [description]
+ */
+function invalidCommand(cmd) {
+  console.log(colors.red(`'${cmd}' is not a valid command.`));
+
+  const scriptName = path.basename(__filename)
+  console.log(`Use: ${scriptName} <command> [target] [options]`)
+  console.log(`     ${scriptName} --help`)
+}
+
+
 /** Commander - CLI definitions */
 
 
@@ -525,6 +575,11 @@ commander
     console.log('    $ module_loader rm tab_colors');
     console.log();
   })
+
+
+commander
+  .command('*')
+  .action(invalidCommand)
 
 
 commander.parse(process.argv);

@@ -1,3 +1,6 @@
 # MODULE
+# VERSION 0.0.1
+# DESC Sources tmuxinator zsh completion script
+# DEPENDS tmux, tmuxinator
 
 source ~/.bin/tmuxinator.zsh

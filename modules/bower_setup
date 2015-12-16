@@ -1,4 +1,7 @@
 # MODULE
+# VERSION 0.0.1
+# DESC Creates a few aliases for quick and easy interaction with Bower
+# DEPENDS Bower
 
 alias b:i="bower install --save"
 alias b:u="bower update"

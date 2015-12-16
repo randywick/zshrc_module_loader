@@ -1,4 +1,7 @@
 # MODULE
+# VERSION 0.0.1
+# DESC Adds a few convenience aliases mainly covering shell interaction and .zshrc
+# DEPENDS
 
 alias z="source ~/.zshrc"
 alias zsrc="source ~/.zshrc"

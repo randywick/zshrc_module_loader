@@ -1,4 +1,7 @@
 # MODULE
+# VERSION 0.0.1
+# DESC Adds a few simple aliases to simplify git command-line interaction
+# DEPENDS git
 
 alias g:c="git commit -am"
 alias g:aa="git add --all"

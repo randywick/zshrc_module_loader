@@ -1,4 +1,7 @@
 # MODULE
+# VERSION 0.0.1
+# DESC Creates an alias-like convenience function to copy the contents of a file to the clipboard
+# DEPENDS Mac OS X
 
 # copies the contents of $1 to the clipboard
 cb() { cat "$1" | pbcopy }

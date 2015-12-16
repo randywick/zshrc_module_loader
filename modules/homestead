@@ -1,4 +1,7 @@
 # MODULE
+# VERSION 0.0.1
+# DESC Convenience function to launch Laravel Homestead instances from any PWD
+# DEPENDS Laravel Homestead, vagrant
 
 h5() {
     if [[ -d ~/Homestead ]]; then

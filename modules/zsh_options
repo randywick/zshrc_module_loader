@@ -1,4 +1,7 @@
 # MODULE
+# VERSION 0.0.1
+# DESC Disables shared zsh history between sessions
+# DEPENDS
 
 unsetopt share_history
 setopt no_share_history

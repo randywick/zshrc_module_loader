@@ -1,4 +1,7 @@
 # MODULE
+# VERSION 0.0.1
+# DESC Provides several aliases for easy interaction with tmux
+# DEPENDS tmux
 
 alias t="t.new"
 alias t:new="tmux new -s"

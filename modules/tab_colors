@@ -1,4 +1,7 @@
 # MODULE
+# VERSION 0.0.1
+# DESC injects tab-color() function to modify iTerm2 tab colors and calls this using the precmd() function hook
+# DEPENDS
 
 tab-color() {
   echo -ne "\033]6;1;bg;red;brightness;$1\a"
