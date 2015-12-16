@@ -25,7 +25,7 @@ load_modules() {
 
       else
 
-        echo "Skipping $file"
+        # echo "Skipping $file"
 
       fi
 
