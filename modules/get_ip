@@ -1,0 +1,6 @@
+# MODULE
+# VERSION 0.0.1
+# DESC Creates an alias to fetch the public IP
+# DEPENDS curl
+
+alias getip="curl ipecho.net/plain; echo"
