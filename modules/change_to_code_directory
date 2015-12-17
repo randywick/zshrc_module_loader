@@ -1,24 +1,34 @@
 # MODULE
 # VERSION 0.0.1
 # DESC shortcut to your code directory 
-# AUTHOR Todd Mc Brearty
-# EMAIL todd.mcbrearty@gmail.com
+# AUTHOR Todd Mc Brearty <todd.mcbrearty@gmail.com>
 
 ccd() {
-	config_file="change_to_code_directory.conf"
-	if [ ! -f "$config_file"];  then
+
+	config_file="$HOME/.module_loader/change_to_code_directory.conf"
+	. "${config_file}"
+
+	if [ ! -f ${config_file} ];  then
 		echo -n "Enter the full path to your code directory then press [ENTER]: "
 		read code_dir
 
-		echo "code_directory=${code_dir}" >> ./"$config_file"
+		echo "code_directory=${code_dir}" > "${config_file}"
 	fi
 
-	. "$config_file"
+	. "${config_file}"
 
-	if [ -n $1 ]; then
-        cd "$code_directory $1"
-        exit(0)
+	if [ -n "$1" ]; then
+		if [ -d "${code_directory}/${1}" ]; then
+	        cd "${code_directory}/${1}"
+	        echo "Listing $1 directory"
+	        ls -a
+	        return
+	    else
+	    	echo "${code_directory}/${1} does not exist. Putting you into the code directory"
+        fi
 	fi
 
-	cd "$code_directory"
+	cd "${code_directory}"
+	echo "Listing code directory"
+	ls -a
 }
