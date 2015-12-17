@@ -1,0 +1,27 @@
+# MODULE
+# VERSION 0.0.1
+# DESC shortcuts for laravel's artisan command 
+# AUTHOR Todd Mc Brearty
+# EMAIL todd.mcbrearty@gmail.com
+
+#artisan make
+alias artisan="php artisan"
+alias m:command="php artisan make:command"
+alias m:console="php artisan make:console"
+alias m:controller="php artisan make:controller"
+alias m:event="php artisan make:event"
+alias m:middleware="php artisan make:middleware"
+alias m:migration="php artisan make:migration"
+alias m:model="php artisan make:model"
+alias m:provider="php artisan make:provider"
+alias m:request="php artisan make:request"
+
+
+#artisan migrate
+alias mig="php artisan migrate"
+alias mig:install="php artisan migrate:install"
+alias mig:refresh="php artisan migrate:refresh"
+alias mig:reset="php artisan migrate:reset"
+alias mig:rollback="php artisan migrate:rollback"
+alias mig:status="php artisan migrate:status"
+alias db:seed="php artisan db:seed"
