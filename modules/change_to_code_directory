@@ -1,0 +1,24 @@
+# MODULE
+# VERSION 0.0.1
+# DESC shortcut to your code directory 
+# AUTHOR Todd Mc Brearty
+# EMAIL todd.mcbrearty@gmail.com
+
+ccd() {
+	config_file="change_to_code_directory.conf"
+	if [ ! -f "$config_file"];  then
+		echo -n "Enter the full path to your code directory then press [ENTER]: "
+		read code_dir
+
+		echo "code_directory=${code_dir}" >> ./"$config_file"
+	fi
+
+	. "$config_file"
+
+	if [ -n $1 ]; then
+        cd "$code_directory $1"
+        exit(0)
+	fi
+
+	cd "$code_directory"
+}
