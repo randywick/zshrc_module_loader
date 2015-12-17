@@ -1,0 +1,6 @@
+# MODULE
+# VERSION 0.0.1
+# DESC Various enhancements around vim
+# DEPENDS vim, apt-vim
+
+export PATH="$PATH:$HOME/.vimpkg/bin"
