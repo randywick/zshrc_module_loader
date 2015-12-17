@@ -1,5 +1,5 @@
 {
-  "name": "module_loader",
+  "name": "xan-module_loader",
   "version": "1.0.0",
   "description": "A very simple component to modularize .zshrc source files",
   "main": "module_loader.js",
@@ -21,5 +21,8 @@
     "commander": "^2.9.0",
     "debug": "^2.2.0",
     "fs-extra": "^0.26.2"
+  },
+  "bin": {
+    "modload": "./modload"
   }
 }
