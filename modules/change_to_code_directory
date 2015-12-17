@@ -6,7 +6,6 @@
 ccd() {
 
 	config_file="$HOME/.module_loader/change_to_code_directory.conf"
-	. "${config_file}"
 
 	if [ ! -f ${config_file} ];  then
 		echo -n "Enter the full path to your code directory then press [ENTER]: "
