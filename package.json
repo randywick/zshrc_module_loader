@@ -1,6 +1,6 @@
 {
   "name": "xan-module_loader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A very simple component to modularize .zshrc source files",
   "main": "module_loader.js",
   "scripts": {
