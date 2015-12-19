@@ -7,16 +7,19 @@
 
 ##### meta
 function ag:describe() {
-  echo "ag:i - installs a binary package"
-  echo "ag:rm - removes a binary package"
-  echo "ag:auto - autoremoves stale dependences"
-  echo "ag:purge - removes and purges a package"
-  echo "ag:src - fetches one or more source packages"
-  echo "ag:update - updates package lists"
-  echo "ag:testppa(ppa[, list]) - tests whether a sources list contains a ppa.  list defaults to /etc/apt/sources.list"
-  echo "ag:addppa(ppa[, list]) - adds a ppa to a sources list, if not already contained.  list defaults to /etc/apt/sources.list"
-  echo "ag:s - search apt-cache"
-  echo "ag:show - shows human-readable package information"
+  echo "ag:i                    - installs a binary package"
+  echo "ag:rm                   - removes a binary package"
+  echo "ag:auto                 - autoremoves stale dependences"
+  echo "ag:purge                - removes and purges a package"
+  echo "ag:src                  - fetches one or more source packages"
+  echo "ag:update               - updates package lists"
+  echo "ag:testppa(ppa[, list]) - tests whether a sources list contains a ppa."
+  echo "                          list defaults to /etc/apt/sources.list"
+  echo "ag:addppa(ppa[, list])  - adds a ppa to a sources list, if not already"
+  echo "                          contained.  list defaults to"
+  echo "                          /etc/apt/sources.list"
+  echo "ag:s                    - search apt-cache"
+  echo "ag:show                 - shows human-readable package information"
 }
 
 
