@@ -61,16 +61,17 @@ ag:src() {
   successes=""
   failed=""
 
-  for package in "$@"; do
-    if [[ $(apt-get source $package) -eq 0 ]]; then
-      sudo apt-get -y build-dep $package
-      echo "source stored at $SOURCE_DIR/$package"
+  for p in "$@"
+  do
+    if [[ $(apt-get source "$p") -eq 0 ]]; then
+      sudo apt-get -y build-dep $p
+      echo "source stored at $SOURCE_DIR/$p"
       [[ -z "$successes" ]] || successes="$successes, "
-      successes="$package"
+      successes="$p"
     else
-      echo "failed to fetch source: $package"
+      echo "failed to fetch source: $p"
       [[ -z "$failed" ]] || failed="$failed, "
-      failed="$package"
+      failed="$p"
     fi
   done
 
@@ -87,6 +88,16 @@ ag:src() {
 ##### apt-get ppa list functions
 
 alias ag:update="sudo apt-get update"
+
+
+##
+# ag:curlkey() - fetches a key from a remote url and adds it to apt-key
+#
+# @param    url - the remote url
+##
+ag:curlkey() {
+  curl -o- $1 | sudo apt-key add -
+}
 
 
 ##
