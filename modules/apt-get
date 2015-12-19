@@ -123,8 +123,9 @@ ag:testppa() {
   echo "using list: $src_list"
 
   # validate source list directory
-  if [[ ! -d $(dirname "$src_list") ]]; then
-    echo "invalid source list directory: $(dirname "$src_list")"
+  list_dir=$(dirname "$src_list")
+  if [[ ! -d "$list_dir" ]]; then
+    echo "invalid source list directory: $list_dir"
     return 1
   fi
 
@@ -135,7 +136,8 @@ ag:testppa() {
   fi
 
   # attempt to match the ppa within the list file
-  if [[ $(grep -Fxq "$ppa" "$src_list") -eq 0 ]]; then
+  ppa_match=$(grep -Fxq "$ppa" "$src_list")
+  if [[ $ppa_match -eq 0 ]]; then
     # the name was found
     return 2
   else
