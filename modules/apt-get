@@ -1,0 +1,163 @@
+# MODULE
+# VERSION 0.0.1
+# DESC Aliases to simplify apt-get stuffs
+# AUTHOR rw
+# EMAIL email@example.com
+
+
+##### meta
+function ag:describe() {
+  echo "ag:i - installs a binary package"
+  echo "ag:rm - removes a binary package"
+  echo "ag:auto - autoremoves stale dependences"
+  echo "ag:purge - removes and purges a package"
+  echo "ag:src - fetches one or more source packages"
+  echo "ag:update - updates package lists"
+  echo "ag:testppa(ppa[, list]) - tests whether a sources list contains a ppa.  list defaults to /etc/apt/sources.list"
+  echo "ag:addppa(ppa[, list]) - adds a ppa to a sources list, if not already contained.  list defaults to /etc/apt/sources.list"
+  echo "ag:s - search apt-cache"
+  echo "ag:show - shows human-readable package information"
+}
+
+
+##### apt-get binary
+
+alias ag:i="sudo apt-get -y install"
+alias ag:rm="sudo apt-get -y remove"
+alias ag:auto="sudo apt-get -y autoremove"
+
+
+##
+# ag:purge() - removes and purges one or more binary packages
+#
+# @param {variadic} package - one or more packages to fetch
+##
+ag:purge() {
+  ag:rm "$@" && ag:purge "$@" && ag:auto
+}
+
+
+##### apt-get source
+
+##
+# ag:src() - fetches a source package from a repository and automatically
+#            builds dependencies
+#
+# @param {variadic} package - one or more packages to fetch
+##
+ag:src() {
+  # allow src dir configuration
+  if && SOURCE_DIR="$HOME/src"
+
+  # create src dir if necessary
+  [[ ! -d "$SOURCE_DIR" ]] && mkdir -p "$SOURCE_DIR"
+
+  PWD_START="$PWD"
+  cd "$SOURCE_DIR"
+
+  successes=""
+  failed=""
+
+  for package in "$@"; do
+    if [[ $(apt-get source $package) -eq 0 ]]; then
+      sudo apt-get -y build-dep $package
+      echo "source stored at $SOURCE_DIR/$package"
+      [[ -z "$successes" ]] || successes="$successes, "
+      successes="$package"
+    else
+      echo "failed to fetch source: $package"
+      [[ -z "$failed" ]] || failed="$failed, "
+      failed="$package"
+    fi
+  done
+
+  if [[ -z "$failed" ]]; then
+    echo "all source packages successfully fetched."
+    return 0
+  else
+    echo "some source packages failed: $failed"
+    return 1
+  fi
+}
+
+
+##### apt-get ppa list functions
+
+alias ag:update="sudo apt-get update"
+
+
+##
+# ag:testppa() - tests whether a ppa is contained in a sources list
+#
+# @param    ppa - the ppa to test for
+# @param [list] - the list file to test.  defaults to /etc/apt/sources.list
+#
+# @returns      - 0 if not included; non-zero otherwise
+##
+ag:testppa() {
+  ppa="$1"
+
+  # if no second argument is provided, assume /etc/apt/sources.list
+  if [[ -z ${2+x} ]]; then
+    list="/etc/apt/sources.list"
+  else
+    list=$2
+  fi
+
+  # validate source list directory
+  if [[ ! -d $(dirname "$list") ]]; then
+    echo "invalid source list directory: $(dirname "$list")"
+    return 1
+  fi
+
+  # if the list does not exist, no need to test for ppa
+  if [[ ! -f $list ]]; then
+    # the file does not exist yet
+    return 0
+  fi
+
+  # attempt to match the ppa within the list file
+  if [[ $(grep -Fxq "$ppa" "$list") -eq 0 ]]; then
+    # the name was found
+    return 2
+  else
+    # the source was not found
+    return 0
+  fi
+}
+
+
+##
+# ag:addppa() - adds a ppa to a sources list
+#
+# @param    ppa - the ppa to test for
+# @param [list] - the sources list.  defaults to /etc/apt/sources.list
+#
+# @returns      - 0 if not included; non-zero otherwise
+##
+ag:addppa() {
+  ppa="$1"
+
+  # if no second argument is provided, assume /etc/apt/sources.list
+  if [[ -z ${2+x} ]]; then
+    list="/etc/apt/sources.list"
+  else
+    list=$2
+  fi
+
+  if [[ $(ag:testppa "$ppa" "$list") -eq 0 ]]; then
+    # valid pathname and source does not exist
+    echo "$ppa" | sudo tee -a "$list"
+    ag:update
+    return 0
+  else
+    # invalid pathname or source already exists
+    return 1
+  fi
+}
+
+
+##### apt-cache
+
+alias ag:s="apt-cache search"
+alias ag:show="apt-cache show"
