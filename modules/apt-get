@@ -63,7 +63,8 @@ ag:src() {
 
   for p in "$@"
   do
-    if [[ $(apt-get source "$p") -eq 0 ]]; then
+    fetched=$(apt-get source "$p" && echo 0)
+    if [[ $fetched -eq 0 ]]; then
       sudo apt-get -y build-dep $p
       echo "source stored at $SOURCE_DIR/$p"
       [[ -z "$successes" ]] || successes="$successes, "
