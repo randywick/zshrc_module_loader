@@ -1,0 +1,14 @@
+# MODULE
+# VERSION 0.0.1
+# DESC Wrappers for some common crypto things
+# DEPENDS openssl
+
+genhash() {
+  if [[ "$1" ]]; then
+    len=$1
+  else
+    len=32
+  fi
+
+  openssl rand -base64 $len
+}
