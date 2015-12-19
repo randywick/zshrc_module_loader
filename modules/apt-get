@@ -121,14 +121,15 @@ ag:testppa() {
   fi
 
   # validate source list directory
-  list_dir=$(dirname "$src_list")
+  dirname "$src_list"
+  list_dir=$?
   if [[ ! -d "$list_dir" ]]; then
     echo "invalid source list directory: $list_dir"
     return 1
   fi
 
   # if the list does not exist, no need to test for ppa
-  if [[ ! -f $src_list ]]; then
+  if [[ ! -f "$src_list" ]]; then
     # the file does not exist yet
     return 0
   fi
