@@ -115,27 +115,27 @@ ag:testppa() {
 
   # if no second argument is provided, assume /etc/apt/sources.list
   if [[ -z ${2+x} ]]; then
-    list="/etc/apt/sources.list"
+    src_list="/etc/apt/sources.list"
   else
-    list=$2
+    src_list="$2"
   fi
 
-  echo "using list $list"
+  echo "using list $src_list"
 
   # validate source list directory
-  if [[ ! -d $(dirname "$list") ]]; then
-    echo "invalid source list directory: $(dirname "$list")"
+  if [[ ! -d $(dirname "$src_list") ]]; then
+    echo "invalid source list directory: $(dirname "$src_list")"
     return 1
   fi
 
   # if the list does not exist, no need to test for ppa
-  if [[ ! -f $list ]]; then
+  if [[ ! -f $src_list ]]; then
     # the file does not exist yet
     return 0
   fi
 
   # attempt to match the ppa within the list file
-  if [[ $(grep -Fxq "$ppa" "$list") -eq 0 ]]; then
+  if [[ $(grep -Fxq "$ppa" "$src_list") -eq 0 ]]; then
     # the name was found
     return 2
   else
