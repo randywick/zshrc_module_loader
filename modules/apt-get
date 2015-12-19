@@ -120,8 +120,6 @@ ag:testppa() {
     src_list="$2"
   fi
 
-  echo "$src_list"
-
   # validate source list directory
   list_dir=$(dirname "$src_list")
   if [[ ! -d "$list_dir" ]]; then
