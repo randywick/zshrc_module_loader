@@ -4,11 +4,12 @@
 # DEPENDS openssl
 
 genhash() {
-  if [[ "$1" ]]; then
+  if [[ $1 =~ '^[0-9]+$' ]]; then
     len=$1
   else
     len=32
   fi
 
-  openssl rand -base64 $len
+  adj=$((len+1))
+  echo $(openssl rand -base64 $len) | cut -c1,$adj
 }
