@@ -61,10 +61,10 @@ ag:src() {
   successes=""
   failed=""
 
-  for p in "$@"
-  do
-    fetched=$(apt-get source "$p" && echo 0)
-    if [[ $fetched -eq 0 ]]; then
+  for p in "$@"; do
+
+    apt-get source "$p"
+    if [[ $? -eq 0 ]]; then
       sudo apt-get -y build-dep $p
       echo "source stored at $SOURCE_DIR/$p"
       [[ -z "$successes" ]] || successes="$successes, "
@@ -74,6 +74,7 @@ ag:src() {
       [[ -z "$failed" ]] || failed="$failed, "
       failed="$p"
     fi
+
   done
 
   if [[ -z "$failed" ]]; then
