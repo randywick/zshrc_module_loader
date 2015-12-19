@@ -10,6 +10,5 @@ genhash() {
     len=32
   fi
 
-  adj=$((len+1))
-  echo $(openssl rand -base64 $len) | cut -c1,$adj
+  echo "$(openssl rand -base64 $len)" | cut -b1-$((len+1))
 }
