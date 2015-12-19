@@ -120,7 +120,7 @@ ag:testppa() {
     src_list="$2"
   fi
 
-  echo "using list $src_list"
+  echo "using list: $src_list"
 
   # validate source list directory
   if [[ ! -d $(dirname "$src_list") ]]; then
