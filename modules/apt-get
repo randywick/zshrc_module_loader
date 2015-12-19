@@ -120,6 +120,8 @@ ag:testppa() {
     list=$2
   fi
 
+  echo "using list $list"
+
   # validate source list directory
   if [[ ! -d $(dirname "$list") ]]; then
     echo "invalid source list directory: $(dirname "$list")"
