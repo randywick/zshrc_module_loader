@@ -1,0 +1,19 @@
+# MODULE
+# VERSION 0.0.1
+# DESC simplify ssh to aws ec2
+# DEPENDS 
+
+assh() {
+  if [[ $1 = "-e" ]]; then
+    assh_user="ec2-user"
+    assh_server="$2"
+  else
+    assh_user="ubuntu"
+    assh_server="xandocs.com"
+    [[ -z "$1" ]] || assh_server="$1.$assh_server"
+  fi
+
+  assh_creds="$HOME/.ssh/id_rsa"
+
+  ssh -i "$assh_creds" "$assh_user@$assh_server"
+}
