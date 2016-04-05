@@ -20,7 +20,7 @@ load_modules() {
 
       if [[ "$top_line" == "# MODULE" ]]; then
 
-        echo "Loading $file"
+        #echo "Loading $file"
         . $file
 
       else
