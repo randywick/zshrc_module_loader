@@ -1,0 +1,15 @@
+# MODULE
+# VERSION 0.0.1
+# DESC deployment utilities
+# DEPENDS 
+
+f:all() {
+  if [[ -z "$1" ]]; then
+    server="res"
+  else
+    server="$1"
+  fi
+
+  cd "/var/app/$server"
+  git pull && bower install && gulp && forever restart $server && tail -f "/home/ubuntu/.forever/$server.log"
+}
