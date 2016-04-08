@@ -11,7 +11,12 @@ f:all() {
   fi
 
   cd "/var/app/$server"
-  try:ex git pull && try:ex bower install && try:ex gulp && try:ex forever restart $server && try:ex tail -f "/home/ubuntu/.forever/$server.log"
+
+  command -v git >/dev/null && git pull
+  command -v bower >/dev/null && bower install
+  command -v gulp >/dev/null && gulp
+  command -v forever >/dev/null && forever restart $server
+  command -v tail >/dev/null && tail -f "/home/ubuntu/.forever/$server.log"
 
 
   #git pull && bower install && gulp && forever restart $server && tail -f "/home/ubuntu/.forever/$server.log"
