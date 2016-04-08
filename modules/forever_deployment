@@ -10,6 +10,22 @@ f:all() {
     server="$1"
   fi
 
+  try:ex() {
+    cmd=$1
+    argstring="$(printf '%s ' "${*:2}" | sed 's,^ *,,; s, *$,,')"
+
+    if command -v $1 >/dev/null; then
+      eval "$cmd $argstring"
+    fi
+  }
+
   cd "/var/app/$server"
-  git pull && bower install && gulp && forever restart $server && tail -f "/home/ubuntu/.forever/$server.log"
+  try:ex git pull
+  try:ex bower install
+  try:ex gulp
+  try:ex forever restart $server
+  try:ex tail -f "/home/ubuntu/.forever/$server.log"
+
+
+  #git pull && bower install && gulp && forever restart $server && tail -f "/home/ubuntu/.forever/$server.log"
 }
