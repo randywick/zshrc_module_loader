@@ -1,0 +1,14 @@
+# MODULE
+# VERSION 0.0.1
+# DESC shell utilities
+# DEPENDS 
+
+try:ex() {
+  cmd=$1
+  [[ -z "$2" ]] && argstring="$(printf '%s ' "${*:2}" | sed 's,^ *,,; s, *$,,')"
+
+  if command -v $cmd >/dev/null; then
+    [[ -z "$2" ]] && eval "$cmd"
+    [[ -z "$2" ]] || eval "$cmd $argstring"
+  fi
+}
